@@ -25,44 +25,36 @@ import java.lang.annotation.Target;
 import java.net.Proxy;
 import java.nio.file.Path;
 
-import org.apiguardian.api.API;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.core.io.Resource;
 
 import com.github.nosan.embedded.cassandra.Cassandra;
+import com.github.nosan.embedded.cassandra.CassandraFactory;
 import com.github.nosan.embedded.cassandra.Version;
 import com.github.nosan.embedded.cassandra.local.LocalCassandraFactory;
+import com.github.nosan.embedded.cassandra.local.WorkingDirectoryCustomizer;
 import com.github.nosan.embedded.cassandra.local.artifact.ArtifactFactory;
 import com.github.nosan.embedded.cassandra.local.artifact.RemoteArtifactFactory;
 import com.github.nosan.embedded.cassandra.local.artifact.UrlFactory;
-import com.github.nosan.embedded.cassandra.test.ClusterFactory;
+import com.github.nosan.embedded.cassandra.test.SessionFactory;
 import com.github.nosan.embedded.cassandra.test.TestCassandra;
 
 /**
  * Annotation that can be specified on a test class that runs {@link Cassandra} based tests. This annotation
  * extends {@link EmbeddedCassandra} annotation and allows to customize {@link RemoteArtifactFactory} and {@link
  * LocalCassandraFactory}.
- * <p>
- * Customized {@link LocalCassandraFactory} will be registered as a <b>@Primary</b> bean with a name
- * <em>localCassandraFactory</em>.
- * <p> {@link RemoteArtifactFactory} <b>will not</b> be registered as a bean, but will be used by {@link
- * LocalCassandraFactory}.
  * <p>The typical usage of this annotation is like:
  * <pre class="code">
  * &#064;RunWith(SpringRunner.class) //for JUnit4
  * &#064;EmbeddedLocalCassandra(version = "2.2.12", ...)
  * public class CassandraTests {
- * &#064;Autowired
- * private TestCassandra cassandra;
- * &#064;Autowired
- * private Cluster cluster;
+ * 	&#064;Test
+ * 	void testMe(){}
+ * }
  * }
  * </pre>
- * <p>
- * <b>Note!</b> It is possible to define you own {@link ArtifactFactory} bean to control {@link
- * LocalCassandraFactory}
- * instance, also is still possible to define you own {@link ClusterFactory} bean to control {@link TestCassandra}
- * instance.
+ * It is possible to define you own {@link SessionFactory}, {@link CassandraFactory}, {@link ArtifactFactory},
+ * {@link WorkingDirectoryCustomizer} bean(s) to control {@link TestCassandra} instance.
  *
  * @author Dmytro Nosan
  * @see EmbeddedCassandra
@@ -75,7 +67,6 @@ import com.github.nosan.embedded.cassandra.test.TestCassandra;
 @Documented
 @Inherited
 @EmbeddedCassandra
-@API(since = "1.2.6", status = API.Status.STABLE)
 public @interface EmbeddedLocalCassandra {
 
 	/**
@@ -101,7 +92,63 @@ public @interface EmbeddedLocalCassandra {
 	String configurationFile() default "";
 
 	/**
-	 * Sets attribute for {@link LocalCassandraFactory#getLogbackFile()}.
+	 * Sets attribute for {@link LocalCassandraFactory#getPort()}.
+	 *
+	 * @return The value of the {@code port} attribute, or {@code -1 same as null}
+	 */
+	int port() default -1;
+
+	/**
+	 * Sets attribute for {@link LocalCassandraFactory#getStoragePort()}.
+	 *
+	 * @return The value of the {@code storagePort} attribute, or {@code -1 same as null}
+	 */
+	int storagePort() default -1;
+
+	/**
+	 * Sets attribute for {@link LocalCassandraFactory#getSslStoragePort()}.
+	 *
+	 * @return The value of the {@code sslStoragePort} attribute, or {@code -1 same as null}
+	 */
+	int sslStoragePort() default -1;
+
+	/**
+	 * Sets attribute for {@link LocalCassandraFactory#getRpcPort()}.
+	 *
+	 * @return The value of the {@code rpcPort} attribute, or {@code -1 same as null}
+	 */
+	int rpcPort() default -1;
+
+	/**
+	 * Sets attribute for {@link LocalCassandraFactory#getJmxLocalPort()}.
+	 *
+	 * @return The value of the {@code jmxLocalPort} attribute, or {@code -1 same as null}
+	 */
+	int jmxLocalPort() default -1;
+
+	/**
+	 * Sets attribute for {@link LocalCassandraFactory#getJvmOptions()}.
+	 * <p>
+	 * This value can contain a {@code spring} placeholder.
+	 *
+	 * @return The value of the {@code jvmOptions} attribute
+	 */
+	String[] jvmOptions() default {};
+
+	/**
+	 * Sets attribute for {@link LocalCassandraFactory#getWorkingDirectory()}.
+	 * <p>
+	 * Path will be interpreted as a {@link Path}.
+	 * <p>
+	 * This value can contain a {@code spring} placeholder.
+	 *
+	 * @return The value of the {@code workingDirectory} attribute
+	 * @see Path
+	 */
+	String workingDirectory() default "";
+
+	/**
+	 * Sets attribute for {@link LocalCassandraFactory#getLoggingFile()}.
 	 * <p>
 	 * Path will be interpreted as a Spring {@link Resource}.
 	 * <p>
@@ -110,7 +157,7 @@ public @interface EmbeddedLocalCassandra {
 	 * @return The value of the {@code logbackFile} attribute
 	 * @see Resource
 	 */
-	String logbackFile() default "";
+	String loggingFile() default "";
 
 	/**
 	 * Sets attribute for {@link LocalCassandraFactory#getRackFile()}.
@@ -137,31 +184,6 @@ public @interface EmbeddedLocalCassandra {
 	String topologyFile() default "";
 
 	/**
-	 * Sets attribute for {@link LocalCassandraFactory#getCommitLogArchivingFile()}.
-	 * <p>
-	 * Path will be interpreted as a Spring {@link Resource}.
-	 * <p>
-	 * This value can contain a {@code spring} placeholder.
-	 *
-	 * @return the value of {@code commitLogArchivingFile} attribute
-	 * @see Resource
-	 * @since 1.2.8
-	 */
-	String commitLogArchivingFile() default "";
-
-	/**
-	 * Sets attribute for {@link LocalCassandraFactory#getWorkingDirectory()}.
-	 * <p>
-	 * Path will be interpreted as a {@link Path}.
-	 * <p>
-	 * This value can contain a {@code spring} placeholder.
-	 *
-	 * @return The value of the {@code workingDirectory} attribute
-	 * @see Path
-	 */
-	String workingDirectory() default "";
-
-	/**
 	 * Sets attribute for {@link LocalCassandraFactory#getJavaHome()}.
 	 * <p>
 	 * Path will be interpreted as a {@link Path}.
@@ -172,29 +194,6 @@ public @interface EmbeddedLocalCassandra {
 	 * @see Path
 	 */
 	String javaHome() default "";
-
-	/**
-	 * Sets attribute for {@link LocalCassandraFactory#getJmxPort()}.
-	 *
-	 * @return The value of the {@code jmxPort} attribute
-	 */
-	int jmxPort() default 7199;
-
-	/**
-	 * Sets attribute for {@link LocalCassandraFactory#getJvmOptions()}.
-	 * <p>
-	 * This value can contain a {@code spring} placeholder.
-	 *
-	 * @return The value of the {@code jvmOptions} attribute
-	 */
-	String[] jvmOptions() default {};
-
-	/**
-	 * Sets attribute for {@link LocalCassandraFactory#getStartupTimeout()} in milliseconds.
-	 *
-	 * @return The value of the {@code startupTimeout} attribute
-	 */
-	long startupTimeout() default 60000;
 
 	/**
 	 * Sets attribute for {@link LocalCassandraFactory#isAllowRoot()}.
@@ -214,17 +213,22 @@ public @interface EmbeddedLocalCassandra {
 	 * Sets attribute for {@link LocalCassandraFactory#isDeleteWorkingDirectory()}.
 	 *
 	 * @return The value of the {@code deleteWorkingDirectory} attribute
-	 * @since 1.4.3
+	 * @since 2.0.0
 	 */
-	@API(since = "1.4.3", status = API.Status.MAINTAINED)
-	boolean deleteWorkingDirectory() default false;
+	boolean deleteWorkingDirectory() default true;
 
 	/**
-	 * Sets attribute for {@link LocalCassandraFactory#getArtifactFactory()}.
+	 * Sets attribute for {@link LocalCassandraFactory#getArtifactDirectory()}.
+	 * <p>
+	 * Path will be interpreted as a {@link Path}.
+	 * <p>
+	 * This value can contain a {@code spring} placeholder.
 	 *
-	 * @return The value of the {@code artifactFactory} attribute
+	 * @return The value of the {@code artifactDirectory} attribute
+	 * @see Path
+	 * @since 1.3.0
 	 */
-	Artifact artifact() default @Artifact;
+	String artifactDirectory() default "";
 
 	/**
 	 * Alias for {@link EmbeddedCassandra#scripts()}.
@@ -251,34 +255,11 @@ public @interface EmbeddedLocalCassandra {
 	String encoding() default "";
 
 	/**
-	 * Alias for {@link EmbeddedCassandra#replace()}.
+	 * Sets attribute for {@link LocalCassandraFactory#getArtifactFactory()}.
 	 *
-	 * @return the type of existing {@code Cluster} to replace
+	 * @return The value of the {@code artifactFactory} attribute
 	 */
-	@AliasFor(annotation = EmbeddedCassandra.class)
-	EmbeddedCassandra.Replace replace() default EmbeddedCassandra.Replace.NONE;
-
-	/**
-	 * Alias for {@link EmbeddedCassandra#registerShutdownHook()}.
-	 *
-	 * @return The value of the {@code registerTestShutdownHook} attribute
-	 * @since 1.2.8
-	 */
-	@AliasFor(annotation = EmbeddedCassandra.class, attribute = "registerShutdownHook")
-	boolean registerTestShutdownHook() default true;
-
-	/**
-	 * Sets attribute for {@link LocalCassandraFactory#getArtifactDirectory()}.
-	 * <p>
-	 * Path will be interpreted as a {@link Path}.
-	 * <p>
-	 * This value can contain a {@code spring} placeholder.
-	 *
-	 * @return The value of the {@code artifactDirectory} attribute
-	 * @see Path
-	 * @since 1.3.0
-	 */
-	String artifactDirectory() default "";
+	Artifact artifact() default @Artifact;
 
 	/**
 	 * Annotation that describes {@link RemoteArtifactFactory} attributes.

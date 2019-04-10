@@ -16,8 +16,7 @@
 
 package com.github.nosan.embedded.cassandra.test.testng;
 
-import com.datastax.driver.core.Cluster;
-import org.apiguardian.api.API;
+import com.datastax.oss.driver.api.core.CqlSession;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
@@ -25,9 +24,9 @@ import com.github.nosan.embedded.cassandra.Cassandra;
 import com.github.nosan.embedded.cassandra.CassandraException;
 import com.github.nosan.embedded.cassandra.CassandraFactory;
 import com.github.nosan.embedded.cassandra.cql.CqlScript;
-import com.github.nosan.embedded.cassandra.test.ClusterFactory;
+import com.github.nosan.embedded.cassandra.lang.annotation.Nullable;
+import com.github.nosan.embedded.cassandra.test.SessionFactory;
 import com.github.nosan.embedded.cassandra.test.TestCassandra;
-import com.github.nosan.embedded.cassandra.util.annotation.Nullable;
 
 /**
  * Base {@code test class} that allows the Cassandra to be {@link Cassandra#start() started} and {@link Cassandra#stop()
@@ -48,40 +47,36 @@ import com.github.nosan.embedded.cassandra.util.annotation.Nullable;
  *
  * @author Dmytro Nosan
  * @see CqlScript
- * @see ClusterFactory
+ * @see SessionFactory
  * @see CassandraFactory
  * @since 1.0.0
  */
-@API(since = "1.0.0", status = API.Status.STABLE)
 public class CassandraTestNG extends TestCassandra {
+
+	/**
+	 * Creates a {@link CassandraTestNG}.
+	 */
+	public CassandraTestNG() {
+		super();
+	}
 
 	/**
 	 * Creates a {@link CassandraTestNG}.
 	 *
 	 * @param scripts CQL scripts to execute
 	 */
-	public CassandraTestNG(@Nullable CqlScript... scripts) {
+	public CassandraTestNG(CqlScript... scripts) {
 		super(scripts);
 	}
 
 	/**
 	 * Creates a {@link CassandraTestNG}.
 	 *
-	 * @param scripts CQL scripts to execute
-	 * @param registerShutdownHook whether shutdown hook should be registered or not
-	 */
-	public CassandraTestNG(boolean registerShutdownHook, @Nullable CqlScript... scripts) {
-		super(registerShutdownHook, scripts);
-	}
-
-	/**
-	 * Creates a {@link CassandraTestNG}.
-	 *
-	 * @param clusterFactory factory to create a {@link Cluster}
+	 * @param sessionFactory factory to create a {@link CqlSession}
 	 * @param scripts CQL scripts to execute
 	 */
-	public CassandraTestNG(@Nullable ClusterFactory clusterFactory, @Nullable CqlScript... scripts) {
-		super(clusterFactory, scripts);
+	public CassandraTestNG(@Nullable SessionFactory sessionFactory, CqlScript... scripts) {
+		super(sessionFactory, scripts);
 	}
 
 	/**
@@ -90,57 +85,20 @@ public class CassandraTestNG extends TestCassandra {
 	 * @param cassandraFactory factory to create a {@link Cassandra}
 	 * @param scripts CQL scripts to execute
 	 */
-	public CassandraTestNG(@Nullable CassandraFactory cassandraFactory, @Nullable CqlScript... scripts) {
+	public CassandraTestNG(@Nullable CassandraFactory cassandraFactory, CqlScript... scripts) {
 		super(cassandraFactory, scripts);
 	}
 
 	/**
 	 * Creates a {@link CassandraTestNG}.
 	 *
-	 * @param clusterFactory factory to create a {@link Cluster}
-	 * @param scripts CQL scripts to execute
-	 * @param registerShutdownHook whether shutdown hook should be registered or not
-	 */
-	public CassandraTestNG(boolean registerShutdownHook, @Nullable ClusterFactory clusterFactory,
-			@Nullable CqlScript... scripts) {
-		super(registerShutdownHook, clusterFactory, scripts);
-	}
-
-	/**
-	 * Creates a {@link CassandraTestNG}.
-	 *
 	 * @param cassandraFactory factory to create a {@link Cassandra}
-	 * @param scripts CQL scripts to execute
-	 * @param registerShutdownHook whether shutdown hook should be registered or not
-	 */
-	public CassandraTestNG(boolean registerShutdownHook, @Nullable CassandraFactory cassandraFactory,
-			@Nullable CqlScript... scripts) {
-		super(registerShutdownHook, cassandraFactory, scripts);
-	}
-
-	/**
-	 * Creates a {@link CassandraTestNG}.
-	 *
-	 * @param cassandraFactory factory to create a {@link Cassandra}
-	 * @param clusterFactory factory to create a {@link Cluster}
+	 * @param sessionFactory factory to create a {@link CqlSession}
 	 * @param scripts CQL scripts to execute
 	 */
-	public CassandraTestNG(@Nullable CassandraFactory cassandraFactory, @Nullable ClusterFactory clusterFactory,
-			@Nullable CqlScript... scripts) {
-		super(cassandraFactory, clusterFactory, scripts);
-	}
-
-	/**
-	 * Creates a {@link CassandraTestNG}.
-	 *
-	 * @param cassandraFactory factory to create a {@link Cassandra}
-	 * @param clusterFactory factory to create a {@link Cluster}
-	 * @param scripts CQL scripts to execute
-	 * @param registerShutdownHook whether shutdown hook should be registered or not
-	 */
-	public CassandraTestNG(boolean registerShutdownHook, @Nullable CassandraFactory cassandraFactory,
-			@Nullable ClusterFactory clusterFactory, @Nullable CqlScript... scripts) {
-		super(registerShutdownHook, cassandraFactory, clusterFactory, scripts);
+	public CassandraTestNG(@Nullable CassandraFactory cassandraFactory, @Nullable SessionFactory sessionFactory,
+			CqlScript... scripts) {
+		super(cassandraFactory, sessionFactory, scripts);
 	}
 
 	@BeforeClass(alwaysRun = true)

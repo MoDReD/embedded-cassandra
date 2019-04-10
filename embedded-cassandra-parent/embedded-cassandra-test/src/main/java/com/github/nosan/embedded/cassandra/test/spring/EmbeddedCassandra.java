@@ -23,14 +23,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.datastax.driver.core.Cluster;
-import org.apiguardian.api.API;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.test.annotation.DirtiesContext;
 
 import com.github.nosan.embedded.cassandra.CassandraFactory;
-import com.github.nosan.embedded.cassandra.test.ClusterFactory;
+import com.github.nosan.embedded.cassandra.test.SessionFactory;
 import com.github.nosan.embedded.cassandra.test.TestCassandra;
 
 /**
@@ -40,24 +38,20 @@ import com.github.nosan.embedded.cassandra.test.TestCassandra;
  * &#064;RunWith(SpringRunner.class) //for JUnit4
  * &#064;EmbeddedCassandra
  * public class CassandraTests {
- * &#064;Autowired
- * private TestCassandra cassandra;
- * &#064;Autowired
- * private Cluster cluster; // `replace` attribute is Replace.ANY
+ * 	&#064;Test
+ * 	void testMe(){}
  * }
  * </pre>
- * {@link TestCassandra} bean with a name <em>embeddedCassandra</em> will be registered as a <b>@Primary</b> bean.
- * <p>
- * <b>Note!</b> It is possible to define you own {@link ClusterFactory} or {@link CassandraFactory} bean(s) to
+ * It is possible to define you own {@link SessionFactory} or {@link CassandraFactory} bean(s) to
  * control {@link TestCassandra} instance.
  *
  * @author Dmytro Nosan
- * @see EmbeddedLocalCassandra
  * @see EmbeddedCassandraContextCustomizer
- * @see ClusterFactory
+ * @see SessionFactory
  * @see CassandraFactory
  * @see TestCassandra
  * @see DirtiesContext
+ * @see EmbeddedLocalCassandra
  * @since 1.0.0
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -65,7 +59,6 @@ import com.github.nosan.embedded.cassandra.test.TestCassandra;
 @Documented
 @Inherited
 @DirtiesContext
-@API(since = "1.0.0", status = API.Status.STABLE)
 public @interface EmbeddedCassandra {
 
 	/**
@@ -104,39 +97,5 @@ public @interface EmbeddedCassandra {
 	 * @return CQL scripts encoding.
 	 */
 	String encoding() default "";
-
-	/**
-	 * Determines what type of existing {@link Cluster} beans can be replaced.
-	 *
-	 * @return the type of existing {@link Cluster} to replace
-	 */
-	Replace replace() default Replace.NONE;
-
-	/**
-	 * Register a shutdown hook with the JVM runtime, stops {@link TestCassandra} on JVM shutdown unless it has already
-	 * been stopped at that time.
-	 *
-	 * @return The value of the {@code registerShutdownHook} attribute
-	 * @since 1.2.8
-	 */
-	boolean registerShutdownHook() default true;
-
-	/**
-	 * What the {@link Cluster} should be replaced.
-	 */
-	enum Replace {
-
-		/**
-		 * Replace any {@link Cluster} beans with an embedded <b>@Primary</b> {@link Cluster} bean with a name
-		 * <em>embeddedCluster</em>.
-		 */
-		ANY,
-
-		/**
-		 * Don't replace {@link Cluster} beans.
-		 */
-		NONE
-
-	}
 
 }
