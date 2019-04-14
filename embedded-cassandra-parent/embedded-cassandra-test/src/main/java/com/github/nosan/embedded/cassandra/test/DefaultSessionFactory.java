@@ -34,12 +34,6 @@ import com.github.nosan.embedded.cassandra.Version;
  */
 public class DefaultSessionFactory implements SessionFactory {
 
-	private static final String USERNAME = "cassandra";
-
-	private static final String PASSWORD = "cassandra";
-
-	private static final String AUTH_PROVIDER = "PlainTextAuthProvider";
-
 	private static final String DATACENTER = "datacenter1";
 
 	@Override
@@ -49,10 +43,6 @@ public class DefaultSessionFactory implements SessionFactory {
 				.withLocalDatacenter(DATACENTER)
 				.withConfigLoader(DriverConfigLoader.programmaticBuilder()
 						.withBoolean(DefaultDriverOption.RECONNECT_ON_INIT, true)
-						.withBoolean(DefaultDriverOption.CONNECTION_WARN_INIT_ERROR, false)
-						.withString(DefaultDriverOption.AUTH_PROVIDER_USER_NAME, USERNAME)
-						.withString(DefaultDriverOption.AUTH_PROVIDER_PASSWORD, PASSWORD)
-						.withString(DefaultDriverOption.AUTH_PROVIDER_CLASS, AUTH_PROVIDER)
 						.withDuration(DefaultDriverOption.RECONNECTION_MAX_DELAY, Duration.ofSeconds(30))
 						.withDuration(DefaultDriverOption.REQUEST_TIMEOUT, Duration.ofSeconds(30))
 						.build())
