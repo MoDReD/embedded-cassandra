@@ -26,7 +26,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import com.github.nosan.embedded.cassandra.test.DefaultSessionFactory;
 import com.github.nosan.embedded.cassandra.test.junit5.CassandraExtension;
 import com.github.nosan.embedded.cassandra.test.util.CqlUtils;
 
@@ -64,16 +63,14 @@ class CqlExecutionListenerCassandraSessionTests {
 	@Configuration
 	static class TestConfiguration {
 
-		@Bean(destroyMethod = "close")
+		@Bean
 		public CqlSession cassandraSession() {
-			return new DefaultSessionFactory()
-					.create(cassandra.getVersion(), cassandra.getSettings());
+			return cassandra.getSession();
 		}
 
-		@Bean(destroyMethod = "close")
+		@Bean
 		public CqlSession cqlSession1() {
-			return new DefaultSessionFactory()
-					.create(cassandra.getVersion(), cassandra.getSettings());
+			return cassandra.getSession();
 		}
 
 	}
