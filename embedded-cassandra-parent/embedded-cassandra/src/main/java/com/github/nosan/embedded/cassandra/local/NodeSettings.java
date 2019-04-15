@@ -20,6 +20,7 @@ import java.net.InetAddress;
 import java.util.Optional;
 
 import com.github.nosan.embedded.cassandra.Settings;
+import com.github.nosan.embedded.cassandra.Version;
 import com.github.nosan.embedded.cassandra.lang.annotation.Nullable;
 
 /**
@@ -47,6 +48,17 @@ class NodeSettings implements Settings {
 
 	@Nullable
 	private volatile Boolean transportEnabled;
+
+	private final Version version;
+
+	NodeSettings(Version version) {
+		this.version = version;
+	}
+
+	@Override
+	public Version getVersion() {
+		return this.version;
+	}
 
 	@Override
 	public InetAddress getAddress() throws IllegalStateException {

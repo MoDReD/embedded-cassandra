@@ -55,16 +55,16 @@ import com.github.nosan.embedded.cassandra.util.SystemUtils;
 abstract class AbstractCassandraNode implements CassandraNode {
 
 	private static final Pattern RPC_TRANSPORT_NOT_STARTING_PATTERN = Pattern
-			.compile("(?i).*not.*starting.*rpc.*server.*");
+			.compile("(?i).*not\\s*starting\\s*rpc\\s*server.*");
 
 	private static final Pattern TRANSPORT_NOT_STARTING_PATTERN = Pattern
-			.compile("(?i).*not.*starting.*(client|transport).*");
+			.compile("(?i).*((not\\s*starting\\s*client\\s*transports)|(not\\s*starting\\s*native\\s*transport)).*");
 
 	private static final Pattern RPC_TRANSPORT_PATTERN = Pattern
-			.compile("(?i).*binding.*thrift.*service.*to.*/(.+):(\\d+).*");
+			.compile("(?i).*binding\\s*thrift\\s*service\\s*to.*/(.+):(\\d+).*");
 
 	private static final Pattern TRANSPORT_PATTERN = Pattern
-			.compile("(?i).*starting.*listening.*cql.*clients.*on.*/(.+):(\\d+).*");
+			.compile("(?i).*listening\\s*for\\s*cql\\s*clients\\s*on.*/(.+):(\\d+).*");
 
 	private static final String ENCRYPTED = "(encrypted)";
 
@@ -183,7 +183,7 @@ abstract class AbstractCassandraNode implements CassandraNode {
 
 	private NodeSettings awaitStart(ProcessId processId) throws InterruptedException, IOException {
 		Logger logger = LoggerFactory.getLogger(Cassandra.class);
-		NodeSettings settings = new NodeSettings();
+		NodeSettings settings = new NodeSettings(this.version);
 		Process process = processId.getProcess();
 		this.threadFactory.newThread(() -> ProcessUtils.read(process, line -> {
 			logger.info(line);
@@ -254,7 +254,6 @@ abstract class AbstractCassandraNode implements CassandraNode {
 			settings.setRpcTransportEnabled(true);
 			this.started = true;
 		});
-
 	}
 
 	private void onAddress(String address, Consumer<InetAddress> addressConsumer) {

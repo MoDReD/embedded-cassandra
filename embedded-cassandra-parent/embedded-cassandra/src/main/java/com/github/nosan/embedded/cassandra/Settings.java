@@ -73,4 +73,11 @@ public interface Settings {
 	 */
 	int getRpcPort() throws IllegalStateException;
 
+	/**
+	 * Returns the {@link Version version}.
+	 *
+	 * @return a version
+	 */
+	Version getVersion();
+
 }
